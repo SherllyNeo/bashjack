@@ -1,7 +1,9 @@
 #!/bin/bash
 
+#this is a hashmap used to match value names to their values
 declare -A string_to_value=( [ace]=10 [2]=2 [3]=3 [4]=4 [5]=5 [6]=6 [7]=7 [8]=8 [9]=9 [10]=10 [king]=10 [queen]=10 [jack]=10)
 
+#this functiond draws a card from the deck array, as many as needed
 draw_card() {
     declare -n _array=$1
     shift
@@ -13,6 +15,8 @@ draw_card() {
     done
     array=("${_array[@]:0:$((${#_array[@]}-_n))}")
 }
+
+#this function evaluates a hand, which is an array of cards. It will take away 9 if there is an ace and the player would go bust
 eval_hand() {
 	declare -i value
 	declare -i card_value
@@ -28,6 +32,7 @@ eval_hand() {
 		value+=$card_value
 	done
 
+	#if the score is over 21 and they have an ace, then take away 9 from their score as the ace can either be 1 or 10
     	if [ $value -gt 21 ] && [[ " ${values_only[*]} " == *"ace"* ]]; then
 		value=$value-9
 	fi
@@ -35,24 +40,7 @@ eval_hand() {
 }
 
 
-
-
-
-#make deck in order
-deck=()
-
-suits=( 'hearts' 'diamonds' 'spades' 'clubs' )
-values=( 'ace' '2' '3' '4' '5' '6' '7' '8' '9' '10' 'jack' 'king' 'queen' )
-
-for suit in "${suits[@]}";
-do
-	for value in "${values[@]}";
-	do
-		deck+=("${value}_of_$suit")
-	done
-
-done
-
+#function that checks if someone is bust, takes the opponenets name as input so it can announce a winner before gracefully crashing
 check_if_bust() {
 	declare -i score=$1
 	oppo=$2
@@ -65,6 +53,7 @@ check_if_bust() {
 
 
 
+#checks who the final winner is with an else for any weird situations. The else would never happen
 final_winner() {
 	declare -i dealer_score=$1
 	declare -i player_score=$2
@@ -83,6 +72,24 @@ final_winner() {
 
 
 
+#make deck in order
+deck=()
+
+suits=( 'hearts' 'diamonds' 'spades' 'clubs' )
+values=( 'ace' '2' '3' '4' '5' '6' '7' '8' '9' '10' 'jack' 'king' 'queen' )
+
+for suit in "${suits[@]}";
+do
+	for value in "${values[@]}";
+	do
+		deck+=("${value}_of_$suit")
+	done
+
+done
+
+
+
+
 
 round() {
 	#shuffle deck
@@ -94,6 +101,8 @@ round() {
 	stand=false
 	dealers_hand=()
 	players_hand=()
+
+	#draw cards for the dealer, player and add them to their hands
 	draw_card shuffled_deck dealer_card_1 dealer_card_2
 	#shuffle deck
 	shuffled_deck=( $(shuf -e "${deck[@]}") )
@@ -103,10 +112,9 @@ round() {
 	players_hand+=("$player_card_1")
 	players_hand+=("$player_card_2")
 	while ! $stand; do
-	#display dealers first card and players hand, option to hit or stand if not blackjack
+	#display dealers first card and players hand, option to hit or stand
 	printf " \n \ndealers face up card is ${dealers_hand[1]} \n"
 	printf "your cards are ${players_hand[*]} \n \n"
-	# check blackjack
 	read -p "do you want to (h)it or (s)tay? : " response
 	case $response in
 	    H* | h* )
@@ -129,6 +137,7 @@ round() {
 	esac
 
 	done
+	#now it's dealers turn, they flip over their other card and draw based on some rules. In this case if their total is less than 17
 	echo "dealers hand is ${dealers_hand[*]}"
 	dealer_eval=$(eval_hand dealers_hand)
 	while [ "$dealer_eval" -le 17 ]; do
@@ -139,7 +148,6 @@ round() {
 		sleep 1
 		dealers_hand+=("$new_dealer_card")
 		dealer_eval=$(eval_hand dealers_hand)
-		check_if_bust dealers_eval "player"
 	done
 	sleep 1
 	echo "dealers score is now $(eval_hand dealers_hand)"
@@ -148,6 +156,7 @@ round() {
 	sleep 1
 
 
+	#find each players score and print it out
 	player_scr=$(eval_hand players_hand)
 	dealer_scr=$(eval_hand dealers_hand)
 	echo "player score is $player_scr and dealer score is $dealer_scr"
