@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare -A string_to_value=( ["ace"]=1 ["2"]=2 ["3"]=3 ["4"]=4 ["5"]=5 ["6"]=6 ["7"]=7 ["8"]=8 ["9"]=9 ["10"]=10 ["king"]=10 ["queen"]=10 ["jack"]=1)
+declare -A string_to_value=( [ace]=10 [2]=2 [3]=3 [4]=4 [5]=5 [6]=6 [7]=7 [8]=8 [9]=9 [10]=10 [king]=10 [queen]=10 [jack]=10)
 
 draw_card() {
     declare -n _array=$1
@@ -14,19 +14,30 @@ draw_card() {
     array=("${_array[@]:0:$((${#_array[@]}-_n))}")
 }
 evaluate_hand() {
-	declare -n hand=$1
-	value=0;
+	declare -i value
+	declare -i card_value
+	local -n hand=$1
+	values_only=()
+	value=0
 	for card in "${hand[@]}";
 	do
-		cutat=of
+		echo "$card"
+		cutat="_of_"
 		val=${card%%${cutat}*}
-		card_value=${stringvalue[$val]}
-		$value+=$card_value
+		values_only+=("$val")
+		card_value=${string_to_value[$val]}
+		value+=$card_value
 	done
+	echo "${values_only[*]}"
+	if [ "$value" -gt 21 ] && [ ];
+then
+		value=$(($value-9))
+	fi
 	echo $value
-
-
 }
+
+
+
 
 
 #make deck in order
@@ -39,8 +50,9 @@ for suit in "${suits[@]}";
 do
 	for value in "${values[@]}";
 	do
-		deck+=("$value of $suit")
+		deck+=("${value}_of_$suit")
 	done
+
 done
 
 
@@ -120,8 +132,10 @@ done
 shuffled_deck=( $(shuf -e "${deck[@]}") )
 echo "original shuffled deck is ${shuffled_deck[*]}  \n \n"
 dealers_hand=()
-for ((i = 0; i < 2; ++i)); do
-	draw_card shuffled_deck card1
-	dealers_hand+=("$card1")
-done
-echo "delers hand is ${dealers_hand[*]}"
+draw_card shuffled_deck card1 card2 card3
+dealers_hand+=("$card1")
+dealers_hand+=("$card2")
+dealers_hand+=("$card3")
+echo "${dealers_hand[*]}"
+dealers_hand_value=$(evaluate_hand dealers_hand)
+echo "dealers hand value is $dealers_hand_value"
