@@ -21,17 +21,14 @@ eval_hand() {
 	value=0
 	for card in "${hand[@]}";
 	do
-		echo "$card"
 		cutat="_of_"
 		val=${card%%${cutat}*}
 		values_only+=("$val")
 		card_value=${string_to_value[$val]}
 		value+=$card_value
 	done
-	echo "${values_only[*]}"
 
     	if [ $value -gt 21 ] && [[ " ${values_only[*]} " == *"ace"* ]]; then
-		echo "chaging ace from 10 to 1 to avoid going broke"
 		value=$value-9
 	fi
 	echo $value
@@ -56,16 +53,28 @@ do
 
 done
 
+check_if_bust() {
+	declare -i score=$1
+	oppo=$2
+	if [ $score -gt 21 ];
+	then
+	    printf "\n \n WENT BUST WITH SCORE $score. $oppo wins \n \n"
+	    exit 0
+	fi
+}
+
+
+
 final_winner() {
 	declare -i dealer_score=$1
 	declare -i player_score=$2
 
-	if [ $dealer_score -gt $player_score ] && [ $dealer_score -le 21 ]; then
+	if [ "$dealer_score" -gt "$player_score" ] && [ "$dealer_score" -le 21 ]; then
 		printf "\n \n dealer won! better luck next time \n \n"
-	elif [ $player_score -gt $deaker_score ] && [ $player_score -le 21 ]; then
-				printf "\n \n dealer won! better luck next time \n \n"
+	elif [ $player_score -gt $dealer_score ] && [ "$player_score" -le 21 ]; then
+		printf "\n \n you won! omg well done <3 <3 \n \n"
 	else
-		printf "wtf"
+		printf "wtf \n"
 
 
 	fi
@@ -86,6 +95,8 @@ round() {
 	dealers_hand=()
 	players_hand=()
 	draw_card shuffled_deck dealer_card_1 dealer_card_2
+	#shuffle deck
+	shuffled_deck=( $(shuf -e "${deck[@]}") )
 	draw_card shuffled_deck player_card_1 player_card_2
 	dealers_hand+=("$dealer_card_1")
 	dealers_hand+=("$dealer_card_2")
@@ -101,9 +112,14 @@ round() {
 	    H* | h* )
 		    printf "\n dealer is drawing you another card... \n"
 		    sleep 1
+		    #shuffle deck
+		    shuffled_deck=( $(shuf -e "${deck[@]}") )
 		    draw_card shuffled_deck new_card
+		    echo "you are given $new_card"
 		    players_hand+=("$new_card")
-		    #check for blackjack or bust
+		    #check for bust
+		    player_eval=$(eval_hand players_hand)
+		    check_if_bust player_eval "dealer"
 		    ;;
 	    S* | s*) printf "\n dealer's turn! \n"
 		    sleep 1
@@ -112,20 +128,28 @@ round() {
 	     *) printf "\n Please type in h or s <3" ;;
 	esac
 
-
-
-
-
-
 	done
+	echo "dealers hand is ${dealers_hand[*]}"
+	dealer_eval=$(eval_hand dealers_hand)
+	while [ "$dealer_eval" -le 17 ]; do
+		#shuffle deck
+		shuffled_deck=( $(shuf -e "${deck[@]}") )
+		draw_card shuffled_deck new_dealer_card
+		echo "dealer drew $new_dealer_card"
+		dealers_hand+=("$new_dealer_card")
+		dealer_eval=$(eval_hand dealers_hand)
+		check_if_bust dealers_eval "player"
+	done
+	sleep 1
+	echo "dealers score is now $(eval_hand dealers_hand)"
 
-	#check dealers value
-	#if under 17, hit, else stand
-	player_scr=$(eval_hand $players_hand)
-	dealer_scr=$(eval_hand $dealers_hand)
+
+	player_scr=$(eval_hand players_hand)
+	dealer_scr=$(eval_hand dealers_hand)
 	echo "player score is $player_scr and dealer score is $dealer_scr"
 	final_winner $dealer_scr $player_scr
 	echo "Round finished"
+	exit 0
 
 
 }
