@@ -13,7 +13,7 @@ draw_card() {
     done
     array=("${_array[@]:0:$((${#_array[@]}-_n))}")
 }
-evaluate_hand() {
+eval_hand() {
 	declare -i value
 	declare -i card_value
 	local -n hand=$1
@@ -56,87 +56,77 @@ do
 
 done
 
+final_winner() {
+	declare -i dealer_score=$1
+	declare -i player_score=$2
+
+	if [ $dealer_score -gt $player_score ] && [ $dealer_score -le 21 ]; then
+		printf "\n \n dealer won! better luck next time \n \n"
+	elif [ $player_score -gt $deaker_score ] && [ $player_score -le 21 ]; then
+				printf "\n \n dealer won! better luck next time \n \n"
+	else
+		printf "wtf"
+
+
+	fi
+
+}
 
 
 
 
-#round() {
-#	#shuffle deck
-#	shuffled_deck=( $(shuf -e "${deck[@]}") )
-#
-#
-#
-#	#init hands
-#	stand=false
-#	dealers_hand=()
-#	players_hand=()
-#	while ! $stand; do
-#	#display dealers first card and players hand, option to hit or stand if not blackjack
-#
-#	#if player stands - we move
-#
-#	#if player hits, deal, chck for blackjack / bust
-#	#then keep going if those didn't happen
-#
-#
-#	done
-#	#after player stands, we go here.
-#	#shows all cards and reveal dealers card
-#	#then while dealers hand is below 17 they will hit
-#	#once dealers hand is > 17, we calculate the value of both hands and then say who won
-#
-#}
+round() {
+	#shuffle deck
+	shuffled_deck=( $(shuf -e "${deck[@]}") )
+
+
+
+	#init hands
+	stand=false
+	dealers_hand=()
+	players_hand=()
+	draw_card shuffled_deck dealer_card_1 dealer_card_2
+	draw_card shuffled_deck player_card_1 player_card_2
+	dealers_hand+=("$dealer_card_1")
+	dealers_hand+=("$dealer_card_2")
+	players_hand+=("$player_card_1")
+	players_hand+=("$player_card_2")
+	while ! $stand; do
+	#display dealers first card and players hand, option to hit or stand if not blackjack
+	echo "dealers face up card is ${dealers_hand[1]}"
+	echo "your cards are ${players_hand[*]}"
+	# check blackjack
+	read -p "do you want to (h)it or (s)tay? : " response
+	case $response in
+	    H* | h* )
+		    printf "\n dealer is drawing you another card... \n"
+		    sleep 1
+		    draw_card shuffled_deck new_card
+		    players_hand+=("$new_card")
+		    #check for blackjack or bust
+		    ;;
+	    S* | s*) printf "\n dealer's turn! \n"
+		    sleep 1
+		    stand=true
+			;;
+	     *) printf "\n Please type in h or s <3" ;;
+	esac
 
 
 
 
 
 
+	done
+
+	#check dealers value
+	#if under 17, hit, else stand
+	player_scr=$(eval_hand $players_hand)
+	dealer_scr=$(eval_hand $dealers_hand)
+	echo "player score is $player_scr and dealer score is $dealer_scr"
+	final_winner $dealer_scr $player_scr
+	echo "Round finished"
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#start round
-
-#deal two dealer cards. Hide one.
-
-
-#Deal two cards to player - check if blackjack - check if dealer has blackjack
-
-#ask hit or stay
-
-#deal one card
-
-#if stay, show dealer face down card
-
-#keep going and check who won
-
-
-
-shuffled_deck=( $(shuf -e "${deck[@]}") )
-echo "original shuffled deck is ${shuffled_deck[*]}  \n \n"
-dealers_hand=()
-draw_card shuffled_deck card1 card2 card3
-dealers_hand+=("king_of_clubs")
-dealers_hand+=("8_of_hearts")
-dealers_hand+=("10_of_diamonds")
-echo "${dealers_hand[*]}"
-dealers_hand_value=$(evaluate_hand dealers_hand)
-echo "dealers hand value is $dealers_hand_value"
+}
+round;
