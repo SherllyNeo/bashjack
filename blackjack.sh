@@ -125,7 +125,7 @@ round() {
 		    sleep 1
 		    stand=true
 			;;
-	     *) printf "\n Please type in h or s <3" ;;
+	     *) printf "\n Please type in h or s <3\n" ;;
 	esac
 
 	done
@@ -135,13 +135,17 @@ round() {
 		#shuffle deck
 		shuffled_deck=( $(shuf -e "${deck[@]}") )
 		draw_card shuffled_deck new_dealer_card
-		echo "dealer drew $new_dealer_card"
+		printf "dealer drew $new_dealer_card\n"
+		sleep 1
 		dealers_hand+=("$new_dealer_card")
 		dealer_eval=$(eval_hand dealers_hand)
 		check_if_bust dealers_eval "player"
 	done
 	sleep 1
 	echo "dealers score is now $(eval_hand dealers_hand)"
+	dealer_eval=$(eval_hand dealers_hand)
+	check_if_bust $(eval_hand dealers_hand) "player"
+	sleep 1
 
 
 	player_scr=$(eval_hand players_hand)
