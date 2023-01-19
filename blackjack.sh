@@ -29,9 +29,10 @@ evaluate_hand() {
 		value+=$card_value
 	done
 	echo "${values_only[*]}"
-	if [ "$value" -gt 21 ] && [ ];
-then
-		value=$(($value-9))
+
+    	if [ $value -gt 21 ] && [[ " ${values_only[*]} " == *"ace"* ]]; then
+		echo "chaging ace from 10 to 1 to avoid going broke"
+		value=$value-9
 	fi
 	echo $value
 }
@@ -133,9 +134,9 @@ shuffled_deck=( $(shuf -e "${deck[@]}") )
 echo "original shuffled deck is ${shuffled_deck[*]}  \n \n"
 dealers_hand=()
 draw_card shuffled_deck card1 card2 card3
-dealers_hand+=("$card1")
-dealers_hand+=("$card2")
-dealers_hand+=("$card3")
+dealers_hand+=("king_of_clubs")
+dealers_hand+=("8_of_hearts")
+dealers_hand+=("10_of_diamonds")
 echo "${dealers_hand[*]}"
 dealers_hand_value=$(evaluate_hand dealers_hand)
 echo "dealers hand value is $dealers_hand_value"
