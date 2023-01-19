@@ -104,8 +104,8 @@ round() {
 	players_hand+=("$player_card_2")
 	while ! $stand; do
 	#display dealers first card and players hand, option to hit or stand if not blackjack
-	echo "dealers face up card is ${dealers_hand[1]}"
-	echo "your cards are ${players_hand[*]}"
+	printf " \n \ndealers face up card is ${dealers_hand[1]} \n"
+	printf "your cards are ${players_hand[*]} \n \n"
 	# check blackjack
 	read -p "do you want to (h)it or (s)tay? : " response
 	case $response in
